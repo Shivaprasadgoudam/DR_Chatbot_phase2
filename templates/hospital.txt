@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Details</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>Doctor Details</h1>
+    <div id="doctorDetails"></div>
+
+    <script>
+        // Function to parse CSV data
+        function parseCSV(csv) {
+            const rows = csv.trim().split('\n');
+            const headers = rows.shift().split(',');
+            return rows.map(row => {
+                const values = row.split(',');
+                return headers.reduce((obj, header, index) => {
+                    obj[header.trim()] = values[index].trim();
+                    return obj;
+                }, {});
+            });
+        }
+
+        // Function to display doctor details under particular hospital
+        function displayDoctorDetails(doctorData) {
+            const doctorDetailsContainer = document.getElementById('doctorDetails');
+            doctorDetailsContainer.innerHTML = ''; // Clear previous content
+
+            // Group doctor data by hospital
+            const groupedByHospital = {};
+            doctorData.forEach(doctor => {
+                if (!groupedByHospital[doctor['Hospital Name']]) {
+                    groupedByHospital[doctor['Hospital Name']] = [];
+                }
+                groupedByHospital[doctor['Hospital Name']].push(doctor);
+            });
+
+            // Create HTML elements for each hospital and its associated doctors
+            for (const hospital in groupedByHospital) {
+                const doctors = groupedByHospital[hospital];
+                const hospitalHeading = document.createElement('h2');
+                hospitalHeading.textContent = hospital;
+                doctorDetailsContainer.appendChild(hospitalHeading);
+
+                const doctorsList = document.createElement('ul');
+                doctors.forEach(doctor => {
+                    const doctorItem = document.createElement('li');
+                    doctorItem.textContent = `Doctor Name: ${doctor['Doctor Name']}, Specialization: ${doctor['Specialization']}, Experience: ${doctor['Experience']}`;
+                    doctorsList.appendChild(doctorItem);
+                });
+                doctorDetailsContainer.appendChild(doctorsList);
+            }
+        }
+
+        // Fetch CSV file from the server
+        fetch('path/to/your/csv/file.csv')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch CSV file');
+                }
+                return response.text();
+            })
+            .then(parseCSV)
+            .then(displayDoctorDetails)
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>
